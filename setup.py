@@ -1,3 +1,3 @@
 from setuptools import setup
 
-setup(name="demo")
+setup(name="model-toolkit")
