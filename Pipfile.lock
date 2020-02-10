@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a75c0b73268ad90e41f14adda5aab334729c5dfe34cbdc9728c60ddb7d045c13"
+            "sha256": "debc87fd4abc9357064e3794268869459f247c1144ba68ea1b8a1dca504c272a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -469,7 +469,7 @@
         }
     },
     "develop": {
-        "xaipient-models": {
+        "model-toolkit": {
             "editable": true,
             "path": "."
         }
