@@ -1,6 +1,7 @@
 from typing import List, Dict, Tuple
 import pickle
 import pandas as pd
+from xgboost import XGBClassifier
 
 from .adversarial_functions import *
 from .databunch import *
@@ -399,6 +400,7 @@ def reset_metrics(metrics):
 def hash_dict(d: Dict) -> int:
     return hash(tuple(sorted(d.items()))) if d is not None else hash(None)
 
+
 def early_stopping_check(history_df, min_delta, patience_count, patience):
     if history_df.shape[0] > 1:
         if history_df.iloc[-2]['Test AUC'] - history_df.iloc[-1][
@@ -407,3 +409,17 @@ def early_stopping_check(history_df, min_delta, patience_count, patience):
         else:
             patience_count += 1
     return patience_count, (patience_count > patience)
+
+
+class XGBClassifierWrapper:
+    def __init__(self, n_inputs=None, *args, **kwargs):
+        self._classifier = XGBClassifier(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        return self._classifier.predict_proba(*args, **kwargs)[:, [1]]
+
+    def fit(self, *args, **kwargs):
+        return self._classifier.fit(*args, **kwargs)
+
+    def get_booster(self, *args, **kwargs):
+        return self._classifier.get_booster(*args, **kwargs)
