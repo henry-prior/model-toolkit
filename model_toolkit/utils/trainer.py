@@ -6,7 +6,7 @@ from .adversarial_functions import *
 from ..models import *
 from sklearn.model_selection import train_test_split
 from xaipient.utils.exceptions_and_warnings import ConfigError
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 __all__ = ["Trainer"]
 
