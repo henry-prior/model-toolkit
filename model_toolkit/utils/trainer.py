@@ -25,6 +25,20 @@ def get_adversarial_function(model: Union[tf.Module, tf.keras.Model]):
         )
 
 
+class XGBClassifierWrapper:
+    def __init__(self, n_inputs=None, *args, **kwargs):
+        self._classifier = XGBClassifier(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        return self._classifier.predict_proba(*args, **kwargs)[:, [1]]
+
+    def fit(self, *args, **kwargs):
+        return self._classifier.fit(*args, **kwargs)
+
+    def get_booster(self, *args, **kwargs):
+        return self._classifier.get_booster(*args, **kwargs)
+
+    
 @dataclass
 class Trainer:
     optimizer: str = 'adam'
@@ -409,17 +423,3 @@ def early_stopping_check(history_df, min_delta, patience_count, patience):
         else:
             patience_count += 1
     return patience_count, (patience_count > patience)
-
-
-class XGBClassifierWrapper:
-    def __init__(self, n_inputs=None, *args, **kwargs):
-        self._classifier = XGBClassifier(*args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        return self._classifier.predict_proba(*args, **kwargs)[:, [1]]
-
-    def fit(self, *args, **kwargs):
-        return self._classifier.fit(*args, **kwargs)
-
-    def get_booster(self, *args, **kwargs):
-        return self._classifier.get_booster(*args, **kwargs)
