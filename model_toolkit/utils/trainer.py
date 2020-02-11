@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Callable
 import pickle
 import os
 import pandas as pd
@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 LoadedKerasModel = AutoTrackable
 
-__all__ = ["Trainer"]
+__all__ = ["Trainer", "XGBClassifierWrapper"]
 
 
 def get_adversarial_function(model: Union[tf.Module, tf.keras.Model]):
@@ -427,3 +427,46 @@ def early_stopping_check(history_df, min_delta, patience_count, patience):
         else:
             patience_count += 1
     return patience_count, (patience_count > patience)
+
+
+def predict(model: Callable, x: np.ndarray, *args, **kwargs):
+    """Calls the model on an example.
+
+    Args:
+        model: A `Model` object.
+        x: A 1-dimensional or 2-dimensional array.
+
+    Returns:
+        If input `x` is a 1-dimensional array, a float is returned. If input `x` is a
+            2-dimensional array of length N, a 1-dimensional array of length N is returned.
+    """
+    if isinstance(x, np.ndarray):
+        x = x.astype(np.float32)
+        res = predict_np(model, x, *args, **kwargs)
+        if isinstance(res, tf.Tensor):
+            res = res.numpy()
+        return res
+    elif isinstance(x, tf.Tensor):
+        x = tf.cast(x, tf.float32)
+        return predict_tf(model, x, *args, **kwargs)
+    else:
+        raise TypeError(
+            f"Invalid type '{type(x).__name__}' for input `x`, expected np.ndarray or tf.Tensor"
+        )
+
+
+def predict_np(model: Callable, x: np.ndarray, *args, **kwargs):
+    x_dim = x.ndim
+    if x_dim == 1:
+        x = np.array([x], dtype=np.float32)
+    out = np.squeeze(np.max(model(x, *args, **kwargs)))
+    return out
+
+
+def predict_tf(model: Callable, x: tf.Tensor, *args, **kwargs):
+    x_dim = len(x.shape)
+    if x_dim == 1:
+        x = tf.convert_to_tensor([x], dtype=tf.float32)
+        return model(x, *args, **kwargs)[0]
+    else:
+        return tf.squeeze(model(x, *args, **kwargs))
