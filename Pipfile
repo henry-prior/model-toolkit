@@ -9,6 +9,7 @@ model-toolkit = {editable = true,path = "."}
 [packages]
 numpy = "*"
 tensorflow = "*"
+tensorflow-addons = "*"
 xgboost = "*"
 sklearn = "*"
 pandas = "*"

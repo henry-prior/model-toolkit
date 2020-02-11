@@ -1,7 +1,9 @@
 from typing import List, Dict, Tuple
 import pickle
+import os
 import pandas as pd
 from xgboost import XGBClassifier
+from pathlib import Path
 
 from .adversarial_functions import *
 from .databunch import *
@@ -9,6 +11,8 @@ from ..models import *
 from sklearn.model_selection import train_test_split
 from xaipient.utils.exceptions_and_warnings import ConfigError
 from dataclasses import dataclass, field
+from tensorflow.python.training.tracking.tracking import AutoTrackable
+LoadedKerasModel = AutoTrackable
 
 __all__ = ["Trainer"]
 
