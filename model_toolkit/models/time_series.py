@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-class TestLSTM(tf.keras.Model):
+class BinaryClassificationLSTM(tf.keras.Model):
     def __init__(self, units, name=None):
-        super(TestLSTM, self).__init__(name=name)
+        super(BinaryClassificationLSTM, self).__init__(name=name)
         self.lstm_layer = tf.keras.layers.LSTM(units, activation='softsign')
         self.dense = tf.keras.layers.Dense(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
