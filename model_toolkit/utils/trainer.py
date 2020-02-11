@@ -9,7 +9,6 @@ from .adversarial_functions import *
 from .databunch import *
 from ..models import *
 from sklearn.model_selection import train_test_split
-from xaipient.utils.exceptions_and_warnings import ConfigError
 from dataclasses import dataclass, field
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 LoadedKerasModel = AutoTrackable
@@ -106,7 +105,7 @@ class Trainer:
         self._init_metrics()
 
         if self.train_percent + self.test_percent > 1:
-            raise ConfigError("`train_percent + test_percent` > 1")
+            raise Exception("`train_percent + test_percent` > 1")
 
         if self.adversarial_args is not None and self.adversarial_args[
             'eps'] > 0:
