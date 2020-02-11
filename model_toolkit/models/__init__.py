@@ -1,6 +1,6 @@
 from .nlp import LanguageCNN
 from .simple_models import (SingleLayerNetwork,
-                            TensorflowLogistic,
+                            TensorFlowLogistic,
                             SVM,
                             from_config,
                             save_model,
