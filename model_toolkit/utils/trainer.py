@@ -3,6 +3,7 @@ import pickle
 import pandas as pd
 
 from .adversarial_functions import *
+from .databunch import *
 from ..models import *
 from sklearn.model_selection import train_test_split
 from xaipient.utils.exceptions_and_warnings import ConfigError
