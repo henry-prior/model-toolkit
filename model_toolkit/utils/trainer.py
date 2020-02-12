@@ -226,9 +226,9 @@ class Trainer:
                 random_state=42
             )
         model.fit(X_train, y_train)
-        train_predictions = predict(model, X_train)
+        train_predictions = np.squeeze(predict(model, X_train))
         self.update_train_metrics(y_train, train_predictions)
-        test_predictions = predict(model, X_test)
+        test_predictions = np.squeeze(predict(model, X_test))
         self.update_test_metrics(y_test, test_predictions)
         self.update_history(0)
         self.log()
