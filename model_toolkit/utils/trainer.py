@@ -134,7 +134,7 @@ class Trainer:
         self._test_metrics = [self._test_loss, self._test_auc]
         if self.metrics is not None:
             if not isinstance(self.metrics, list):
-                raise ConfigError(f"Expected type of parameter `metrics` "
+                raise Exception(f"Expected type of parameter `metrics` "
                                   f"to be 'list', not '{type(self.metrics)}'.")
 
             for metric_name in self.metrics:
@@ -226,9 +226,9 @@ class Trainer:
                 random_state=42
             )
         model.fit(X_train, y_train)
-        train_predictions = np.squeeze(predict(model, X_train))
+        train_predictions = predict(model, X_train)
         self.update_train_metrics(y_train, train_predictions)
-        test_predictions = np.squeeze(predict(model, X_test))
+        test_predictions = predict(model, X_test)
         self.update_test_metrics(y_test, test_predictions)
         self.update_history(0)
         self.log()
@@ -458,8 +458,11 @@ def predict_np(model: Callable, x: np.ndarray, *args, **kwargs):
     x_dim = x.ndim
     if x_dim == 1:
         x = np.array([x], dtype=np.float32)
-    out = np.squeeze(np.max(model(x, *args, **kwargs)))
-    return out
+    out = model(x, *args, **kwargs)
+    if out.shape[1] == 1:
+        return np.squeeze(out >= 0.5)
+    else:
+        return np.squeeze(np.argmax(out, axis=1))
 
 
 def predict_tf(model: Callable, x: tf.Tensor, *args, **kwargs):
