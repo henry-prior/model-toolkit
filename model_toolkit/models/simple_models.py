@@ -4,6 +4,7 @@ from pathlib import Path
 from collections import defaultdict
 from ..utils.io import load_pickle
 from tensorflow.python.training.tracking.tracking import AutoTrackable
+
 LoadedKerasModel = AutoTrackable
 
 
@@ -31,6 +32,47 @@ class SingleLayerNetwork(tf.keras.Sequential):
             input_shape=(n_inputs,))
         activation_layer = tf.keras.layers.Activation(activation)
         super().__init__([logit_layer, activation_layer], name)
+
+
+class MultiLayerNetwork(tf.keras.Sequential):
+    """Implements a multi layer dense network in Keras with mulitclass
+    support. Optional l1 and l2 regularization
+
+    :param n_inputs: number of features
+    :param n_outputs: number of target classes
+    :param n_layers: number of layers
+    :param activation: activation function for final output
+    :param name: optional: name for model
+    :param l1_lambda: lambda if applying l1 regularization. 0.0 for none.
+    :param l2_lambda: lambda if applying l2 regularization. 0.0 for none."""
+
+    def __init__(self,
+                 n_inputs: int = None,
+                 n_outputs: int = None,
+                 n_layers: int = 1,
+                 l1_lambda: int = 0.0,
+                 l2_lambda: int = 0.0,
+                 name: str = None):
+        layers_list = []
+        for _ in range(n_layers - 1):
+            next_layer = tf.keras.layers.Dense(n_inputs,
+                                               kernel_initializer=tf.keras.initializers.GlorotUniform(
+                                                   seed=42),
+                                               kernel_regularizer=tf.keras.regularizers.L1L2(
+                                                   l1=l1_lambda,
+                                                   l2=l2_lambda),
+                                               input_shape=(n_inputs,))
+            layers_list.append(next_layer)
+
+        logit_layer = tf.keras.layers.Dense(
+            n_outputs,
+            kernel_initializer=tf.keras.initializers.GlorotUniform(seed=42),
+            kernel_regularizer=tf.keras.regularizers.L1L2(l1=l1_lambda,
+                                                          l2=l2_lambda),
+            activation='sigmoid',
+            input_shape=(n_inputs,))
+        layers_list.append(logit_layer)
+        super().__init__(layers_list, name)
 
 
 class TensorFlowLogistic(tf.Module):
