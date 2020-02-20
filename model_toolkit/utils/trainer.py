@@ -47,6 +47,7 @@ class Trainer:
     optimizer: str = 'adam'
     loss: Union[str, tf.keras.losses.Loss] = 'BinaryCrossentropy'
     metrics: List[str] = field(default_factory=lambda: ['BinaryAccuracy'])
+    multiclass: bool = False
 
     train_percent: float = 0.8
     test_percent: float = 0.2
@@ -125,13 +126,18 @@ class Trainer:
 
         self._train_loss = tf.keras.metrics.get(loss_name)
         self._train_loss._name = "Train Loss"
-        self._train_auc = tf.keras.metrics.AUC(name="Train AUC")
-        self._train_metrics = [self._train_loss, self._train_auc]
+        self._train_metrics = [self._train_loss]
+        if not self.multiclass:
+            self._train_auc = tf.keras.metrics.AUC(name="Train AUC")
+            self._train_metrics.append(self._train_auc)
 
         self._test_loss = tf.keras.metrics.get(loss_name)
         self._test_loss._name = "Test Loss"
-        self._test_auc = tf.keras.metrics.AUC(name="Test AUC")
-        self._test_metrics = [self._test_loss, self._test_auc]
+        self._test_metrics = [self._test_loss]
+        if not self.multiclass:
+            self._test_auc = tf.keras.metrics.AUC(name="Test AUC")
+            self._test_metrics.append(self._test_auc)
+
         if self.metrics is not None:
             if not isinstance(self.metrics, list):
                 raise Exception(f"Expected type of parameter `metrics` "
@@ -332,8 +338,9 @@ class Trainer:
     def log(self):
         if self.log_dir:
             self.history_df.to_csv(self.log_file)
-            with open(self.roc_file, 'w+b') as roc_pkl:
-                pickle.dump(self.get_roc_metrics(), roc_pkl)
+            if not self.multiclass:
+                with open(self.roc_file, 'w+b') as roc_pkl:
+                    pickle.dump(self.get_roc_metrics(), roc_pkl)
 
     def print_most_recent_metrics(self):
         history = self.history_df.iloc[-1]
@@ -420,8 +427,8 @@ def hash_dict(d: Dict) -> int:
 
 def early_stopping_check(history_df, min_delta, patience_count, patience):
     if history_df.shape[0] > 1:
-        if history_df.iloc[-2]['Test AUC'] - history_df.iloc[-1][
-            'Test AUC'] > min_delta:
+        if history_df.iloc[-2]['Test Loss'] - history_df.iloc[-1][
+            'Test Loss'] > min_delta:
             patience_count = 0
         else:
             patience_count += 1

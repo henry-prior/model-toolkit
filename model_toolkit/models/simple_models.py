@@ -53,6 +53,7 @@ class MultiLayerNetwork(tf.keras.Sequential):
                  l1_lambda: int = 0.0,
                  l2_lambda: int = 0.0,
                  name: str = None):
+        activation = 'softmax' if n_outputs > 1 else 'sigmoid'
         layers_list = []
         for _ in range(n_layers - 1):
             next_layer = tf.keras.layers.Dense(n_inputs,
@@ -69,7 +70,7 @@ class MultiLayerNetwork(tf.keras.Sequential):
             kernel_initializer=tf.keras.initializers.GlorotUniform(seed=42),
             kernel_regularizer=tf.keras.regularizers.L1L2(l1=l1_lambda,
                                                           l2=l2_lambda),
-            activation='sigmoid',
+            activation=activation,
             input_shape=(n_inputs,))
         layers_list.append(logit_layer)
         super().__init__(layers_list, name)
