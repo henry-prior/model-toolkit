@@ -2,7 +2,6 @@ from typing import List, Dict, Tuple, Callable
 import pickle
 import os
 import pandas as pd
-from xgboost import XGBClassifier
 from pathlib import Path
 
 from .adversarial_functions import *
@@ -13,7 +12,10 @@ from dataclasses import dataclass, field
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 LoadedKerasModel = AutoTrackable
 
-__all__ = ["Trainer", "XGBClassifierWrapper"]
+__all__ = ["Trainer"]
+
+class XGBClassifierWrapper:
+    pass
 
 
 def get_adversarial_function(model: Union[tf.Module, tf.keras.Model]):
@@ -27,21 +29,7 @@ def get_adversarial_function(model: Union[tf.Module, tf.keras.Model]):
             f"Adversarial training not supported for specified model of type '{type(model)}'."
         )
 
-
-class XGBClassifierWrapper:
-    def __init__(self, n_inputs=None, *args, **kwargs):
-        self._classifier = XGBClassifier(*args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        return self._classifier.predict_proba(*args, **kwargs)[:, [1]]
-
-    def fit(self, *args, **kwargs):
-        return self._classifier.fit(*args, **kwargs)
-
-    def get_booster(self, *args, **kwargs):
-        return self._classifier.get_booster(*args, **kwargs)
-
-    
+   
 @dataclass
 class Trainer:
     optimizer: str = 'adam'
