@@ -44,4 +44,4 @@ def download_file(url, output_dir='', output_filename=None, overwrite=False, ver
             output_file.write(bytestream.read())
             if verbose:
                 print(f"File saved to {str(output_filepath)}.")
-    return str(output_filepath.resolve())
+    return output_filepath.resolve()
