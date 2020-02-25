@@ -15,8 +15,21 @@ LoadedKerasModel = AutoTrackable
 __all__ = ["Trainer"]
 
 class XGBClassifierWrapper:
-    pass
+    def __init__(self, n_inputs=None, *args, **kwargs):
+        #self._classifier = XGBClassifier(*args, **kwargs)
+        pass
 
+    def __call__(self, *args, **kwargs):
+        #return self._classifier.predict_proba(*args, **kwargs)[:, [1]]
+        pass
+
+    def fit(self, *args, **kwargs):
+        #return self._classifier.fit(*args, **kwargs)
+        pass
+
+    def get_booster(self, *args, **kwargs):
+        #return self._classifier.get_booster(*args, **kwargs)
+        pass
 
 def get_adversarial_function(model: Union[tf.Module, tf.keras.Model]):
     if isinstance(model, tf.keras.Model):
