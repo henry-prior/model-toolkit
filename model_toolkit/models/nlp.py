@@ -16,7 +16,7 @@ class LanguageCNN(tf.keras.Model):
                                                     embeddings_initializer=tf.keras.initializers.Constant(
                                                         embedding_matrix),
                                                     input_length=maxlen,
-                                                    trainable=False)
+                                                    trainable=True)
         self.reshape = tf.keras.layers.Reshape((maxlen, embedding_dim, 1))
 
         self.conv_0 = tf.keras.layers.Conv2D(num_filters,
