@@ -1,4 +1,4 @@
 from .io import *
 from .adversarial_functions import *
-from .trainer import XGBClassifierWrapper, Trainer, predict
+from .trainer import Trainer, predict, XGBClassifierWrapper
 from .databunch import *

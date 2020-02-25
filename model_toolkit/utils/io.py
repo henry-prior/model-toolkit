@@ -17,7 +17,7 @@ def load_pickle(path: Path):
 def remove_url_args(url):
     return url.split('?')[0]
 
-def download_file(url, output_dir='', output_filename=None, overwrite=False):
+def download_file(url, output_dir='', output_filename=None, overwrite=False, verbose=False):
     """Downloads a file to the filesystem.
     
     Args:
@@ -36,10 +36,12 @@ def download_file(url, output_dir='', output_filename=None, overwrite=False):
     output_filepath = output_dir / output_filename
     
     if output_filepath.exists() and not overwrite:
-        print(f"File {str(output_filepath)} already exists, nothing to do.")
+        if verbose:
+            print(f"File {str(output_filepath)} already exists, nothing to do.")
     else:
         bytestream = urllib.request.urlopen(url)
         with open(output_filepath, 'w+b') as output_file:
             output_file.write(bytestream.read())
-            print(f"File saved to {str(output_filepath)}.")
+            if verbose:
+                print(f"File saved to {str(output_filepath)}.")
     return str(output_filepath.resolve())
