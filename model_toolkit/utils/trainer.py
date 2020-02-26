@@ -7,7 +7,6 @@ from pathlib import Path
 from .adversarial_functions import *
 from .databunch import *
 from ..models import *
-from sklearn.model_selection import train_test_split
 from dataclasses import dataclass, field
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 LoadedKerasModel = AutoTrackable
@@ -225,13 +224,12 @@ class Trainer:
     def xgb_fit(self, model: XGBClassifierWrapper, databunch: DataBunch):
         self.reset_metrics()
         X, y = databunch.as_numpy()
-        X_train, X_test, y_train, y_test = \
-            train_test_split(
-                X, y,
-                train_size=self.train_percent,
-                test_size=self.test_percent,
-                random_state=42
-            )
+        idx = np.random.permutation(
+            X.shape[0])
+        sample = int(X.shape[0] * self.train_percent)
+        train_idx, test_idx = idx[:sample], idx[sample:]
+        X_train, X_test, y_train, y_test = X[train_idx, :], X[test_idx, :], \
+                                           y[train_idx, ], y[test_idx, ]
         model.fit(X_train, y_train)
         train_predictions = predict(model, X_train)
         self.update_train_metrics(y_train, train_predictions)
@@ -251,13 +249,12 @@ class Trainer:
                                 if self._adversarial_training else None)
 
         X, y = databunch.as_numpy()
-        X_train, X_test, y_train, y_test = \
-            train_test_split(
-                X, y,
-                train_size=self.train_percent,
-                test_size=self.test_percent,
-                random_state=42
-            )
+        idx = np.random.permutation(
+            X.shape[0])
+        sample = int(X.shape[0] * self.train_percent)
+        train_idx, test_idx = idx[:sample], idx[sample:]
+        X_train, X_test, y_train, y_test = X[train_idx, :], X[test_idx, :], \
+                                           y[train_idx, ], y[test_idx, ]
         train_batches, test_batches = Trainer.batch(X_train, y_train, X_test,
                                                     y_test, self.batch_size,
                                                     self.drop_remainder_batch)
@@ -315,13 +312,12 @@ class Trainer:
 
     def tf_eval(self, model, databunch):
         X, y = databunch.as_numpy()
-        X_train, X_test, y_train, y_test = \
-            train_test_split(
-                X, y,
-                train_size=self.train_percent,
-                test_size=self.test_percent,
-                random_state=42
-            )
+        idx = np.random.permutation(
+            X.shape[0])
+        sample = int(X.shape[0] * self.train_percent)
+        train_idx, test_idx = idx[:sample], idx[sample:]
+        X_train, X_test, y_train, y_test = X[train_idx, :], X[test_idx, :], \
+                                           y[train_idx, ], y[test_idx, ]
         _, test_batches = Trainer.batch(X_train, y_train, X_test, y_test,
                                         self.batch_size,
                                         self.drop_remainder_batch)
