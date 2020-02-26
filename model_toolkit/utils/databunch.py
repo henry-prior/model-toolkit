@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Union, Tuple
 
-import sklearn.preprocessing as pre
 import pandas as pd
 import tensorflow as tf
 import numpy as np
@@ -156,6 +155,28 @@ class DataBunch:
         return cls(**config)
 
 
+class StandardScaler(object):
+    def __init__(self):
+        self.mean = None
+        self.st_dev = None
+
+    def __call__(self, column: np.ndarray):
+        return self.tranform(column)
+
+    def fit(self, column: np.ndarray):
+        self.mean = np.mean(column)
+        self.st_dev = np.std(column)
+
+    def transform(self, column: np.ndarray):
+        if self.mean is None or self.st_dev is None:
+            raise AttributeError("Please run 'fit' before 'transform'")
+        tranformed = (column - self.mean) / self.st_dev
+        return tranformed
+
+    def fit_transform(self, column: np.ndarray):
+        self.fit(column)
+        return self.transform(column)
+
 def load_data(path: Union[str, Path]):
     data_path = Path(path) if not isinstance(path, Path) else path
     file_ext = data_path.suffix[1:]
@@ -188,10 +209,10 @@ def get_feature_encoders(data_df, features, categorical_columns):
     encoders = dict()
     for feature in features:
         if feature in categorical_columns:
-            encoder = pre.LabelEncoder()
-            feature_values = data_df[feature].values
-            encoder.fit(feature_values)
-            encoders[feature] = encoder
+            raise NotImplementedError("Due to windows issue with sklearn "
+                                      "this feature has been removed for "
+                                      "now. Please deal with categorical "
+                                      "columns before saving csv.")
         else:
             encoders[feature] = None
     return encoders
@@ -209,13 +230,9 @@ def get_scalers(data_df, features):
 
 def get_scaler(scaler_type):
     if scaler_type == 'standard':
-        return pre.StandardScaler()
-    elif scaler_type == 'min_max':
-        return pre.MinMaxScaler()
-    elif scaler_type == 'robust':
-        return pre.RobustScaler()
-    elif scaler_type == 'normalize':
-        return pre.Normalizer()
+        return StandardScaler()
+    elif scaler_type in ['min_max', 'robust', 'normalize']:
+        return NotImplementedError()
     else:
         raise ValueError(f"Scaler type '{scaler_type}' not recognized.")
 
