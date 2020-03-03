@@ -52,9 +52,6 @@ class DataBunch:
                 col for col in self.data.columns if col != self.target
             ]
 
-        if self.categorical_columns is None:
-            self.categorical_columns = infer_categorical_columns(self.data)
-
         if self.label_strings is None:
             self.label_strings = {
                 val: str(val)
@@ -208,7 +205,7 @@ def infer_categorical_columns(data_df):
 def get_feature_encoders(data_df, features, categorical_columns):
     encoders = dict()
     for feature in features:
-        if feature in categorical_columns:
+        if categorical_columns and feature in categorical_columns:
             raise NotImplementedError("Due to windows issue with sklearn "
                                       "this feature has been removed for "
                                       "now. Please deal with categorical "
