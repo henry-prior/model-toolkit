@@ -9,5 +9,4 @@ from .simple_models import (SingleLayerNetwork,
                             load_model,
                             load_weights)
 from .tabnet import build_tabnet
-from .temporal_convolutional_network import TemporalConvolutionalNetwork, compiled_tcn
 from .time_series import BinaryClassificationLSTM
