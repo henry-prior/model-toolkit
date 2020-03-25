@@ -6,6 +6,8 @@ import tensorflow as tf
 import numpy as np
 from functools import lru_cache
 
+import category_encoders as ce
+
 __all__ = ["DataBunch"]
 
 
@@ -43,7 +45,7 @@ class DataBunch:
         self.data = data
         self.target = target
         self.feature_names = feature_names
-        self.categorical_columns = categorical_columns
+        self.categorical_columns = categorical_columns or []
         self.label_strings = label_strings
         self.domain = domain
 
@@ -58,9 +60,27 @@ class DataBunch:
                 for val in set(data[target].values)
             }
 
-        self.encoders = get_feature_encoders(self.data, self.feature_names,
-                                             self.categorical_columns)
-        self.scalers = get_scalers(self.data, self.feature_names)
+        self.scalers = get_scalers(self.data, self.feature_names,
+                                   self.categorical_columns)
+
+        self.encoder, feature_names = get_feature_encoders(self.data,
+                                                  self.feature_names,
+                                                  self.categorical_columns)
+
+        self.embedding_dict = {col: [i for i in feature_names if
+                                  i.startswith(col + '_')] for col in
+                                  self.encoder.cols}
+
+        self.feature_names = list(set(self.feature_names) -
+                                  set(self.encoder.cols))
+        self.n_numerical = len(self.feature_names)
+
+        for lst in self.embedding_dict.values():
+            self.feature_names += lst
+
+        print(self.feature_names)
+
+
 
     def __call__(self):
         return self.data
@@ -117,14 +137,13 @@ class DataBunch:
                 f"Inputs of type 'tf.Tensor' are not yet supported.")
         if X.ndim == 1:  # if input is single array
             return self.encode(np.array([X]))[0]
-        X = X.copy()
-        for i, feature in enumerate(self.feature_names):
-            encoder = self.encoders[feature]
-            if encoder is not None:
-                if isinstance(X, pd.DataFrame):
-                    X[feature] = encoder.transform(X[feature].values)
-                elif isinstance(X, np.ndarray):
-                    X[:, i] = encoder.transform(X[:, i])
+
+        if isinstance(X, pd.DataFrame):
+            X = self.encoder.transform(X)
+        elif isinstance(X, np.ndarray):
+            X = self.encoder.transform(pd.DataFrame(X,
+                                                    columns=self.feature_names)
+                                       ).values
         return X
 
     def scale(self, X):
@@ -135,7 +154,7 @@ class DataBunch:
             return self.scale(np.array([X]))[0]
         X = X.copy()
         for i, feature in enumerate(self.feature_names):
-            scaler = self.scalers[feature]
+            scaler = self.scalers.get(feature)
             if scaler is not None:
                 if isinstance(X, pd.DataFrame):
                     X[feature] = scaler.transform(X[feature].values.reshape(
@@ -203,25 +222,30 @@ def infer_categorical_columns(data_df):
 
 
 def get_feature_encoders(data_df, features, categorical_columns):
-    encoders = dict()
+    encoder = ce.OneHotEncoder(use_cat_names=True)
+    encoded_feature_names = encoder.fit_transform(data_df).columns.tolist()
+    return encoder, encoded_feature_names
+    '''encoders = dict()
     for feature in features:
-        if categorical_columns and feature in categorical_columns:
-            raise NotImplementedError("Due to windows issue with sklearn "
-                                      "this feature has been removed for "
-                                      "now. Please deal with categorical "
-                                      "columns before saving csv.")
+        if feature in categorical_columns:
+            encoder = ce.OneHotEncoder(cols=[feature],
+                                       use_cat_names=True)
+            #feature_values = data_df[feature].values.reshape(-1, 1)
+            encoder.fit(data_df)
+            encoders[feature] = encoder
         else:
             encoders[feature] = None
-    return encoders
+    return encoders'''
 
 
-def get_scalers(data_df, features):
+def get_scalers(data_df, features, categorical_columns):
     scalers = dict()
     for feature in features:
-        scaler = get_scaler('standard')
-        feature_values = data_df[feature].values.reshape(-1, 1)
-        scaler.fit(feature_values)
-        scalers[feature] = scaler
+        if feature not in categorical_columns:
+            scaler = get_scaler('standard')
+            feature_values = data_df[feature].values.reshape(-1, 1)
+            scaler.fit(feature_values)
+            scalers[feature] = scaler
     return scalers
 
 
