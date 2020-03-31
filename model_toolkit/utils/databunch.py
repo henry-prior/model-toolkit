@@ -189,6 +189,10 @@ class StandardScaler(object):
         tranformed = (column - self.mean) / self.st_dev
         return tranformed
 
+    def inverse_transform(self, column: np.ndarray):
+        inverse_tranformed = self.mean + (column + self.st_dev)
+        return inverse_tranformed
+
     def fit_transform(self, column: np.ndarray):
         self.fit(column)
         return self.transform(column)
