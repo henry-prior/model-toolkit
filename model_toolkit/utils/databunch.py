@@ -8,6 +8,8 @@ from functools import lru_cache
 
 import category_encoders as ce
 
+import sklearn.preprocessing as pre
+
 __all__ = ["DataBunch"]
 
 
@@ -255,7 +257,7 @@ def get_scalers(data_df, features, categorical_columns):
 
 def get_scaler(scaler_type):
     if scaler_type == 'standard':
-        return StandardScaler()
+        return pre.StandardScaler()
     elif scaler_type in ['min_max', 'robust', 'normalize']:
         return NotImplementedError()
     else:
