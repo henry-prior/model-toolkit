@@ -62,6 +62,7 @@ class MultiLayerNetwork(tf.keras.Sequential):
                                                kernel_regularizer=tf.keras.regularizers.L1L2(
                                                    l1=l1_lambda,
                                                    l2=l2_lambda),
+                                               activation='relu',
                                                input_shape=(n_inputs,))
             layers_list.append(next_layer)
 
